@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebForge | Premium Website Marketplace</title>
+    
+    <!-- Fonts & Tailwind -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['Space Mono', 'monospace']
+                    },
+                    colors: { background: '#0a0a0a', glass: 'rgba(255, 255, 255, 0.03)' },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 15s linear infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-15px)' } },
+                        'pulse-glow': { '0%, 100%': { opacity: 1, filter: 'brightness(1)' }, '50%': { opacity: .7, filter: 'brightness(1.5)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0a0a0a; color: #ffffff; margin: 0; overflow-x: hidden; scroll-behavior: smooth; }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+        .glass-panel:hover { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15); }
+        .neon-text { text-shadow: 0 0 10px rgba(59,130,246,0.5), 0 0 20px rgba(59,130,246,0.3); }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .gradient-text { background: linear-gradient(to right, #60a5fa, #a855f7, #ec4899); -webkit-background-clip: text; color: transparent; }
+    </style>
+
+    <!-- React, Babel, Framer Motion, Firebase -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // ALL INDIA STATES & UNION TERRITORIES
+        const INDIA_STATES = {
+            "Andaman and Nicobar Islands": ["Port Blair"],
+            "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore"],
+            "Arunachal Pradesh": ["Itanagar"],
+            "Assam": ["Guwahati", "Silchar", "Dibrugarh"],
+            "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur"],
+            "Chandigarh": ["Chandigarh"],
+            "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur"],
+            "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+            "Delhi": ["New Delhi", "North Delhi", "South Delhi", "West Delhi", "East Delhi"],
+            "Goa": ["North Goa", "South Goa"],
+            "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+            "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala"],
+            "Himachal Pradesh": ["Shimla", "Dharamshala", "Manali"],
+            "Jammu and Kashmir": ["Srinagar", "Jammu"],
+            "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad"],
+            "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"],
+            "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"],
+            "Ladakh": ["Leh", "Kargil"],
+            "Lakshadweep": ["Kavaratti"],
+            "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior"],
+            "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Thane"],
+            "Manipur": ["Imphal"],
+            "Meghalaya": ["Shillong"],
+            "Mizoram": ["Aizawl"],
+            "Nagaland": ["Kohima", "Dimapur"],
+            "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Puri"],
+            "Puducherry": ["Pondicherry"],
+            "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala"],
+            "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
+            "Sikkim": ["Gangtok"],
+            "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Salem"],
+            "Telangana": ["Hyderabad", "Warangal", "Nizamabad"],
+            "Tripura": ["Agartala"],
+            "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Varanasi", "Agra", "Prayagraj"],
+            "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee"],
+            "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri"],
+            "Other": ["Other District"]
+        };
+
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkF2K56NPSTp34tmOf7MgqdMnPLqz2C2g",
+            authDomain: "nova-11-d1696.firebaseapp.com",
+            databaseURL: "https://nova-11-d1696-default-rtdb.firebaseio.com",
+            projectId: "nova-11-d1696",
+            storageBucket: "nova-11-d1696.firebasestorage.app",
+            messagingSenderId: "321625355066",
+            appId: "1:321625355066:web:65bb1212db3286aa815603"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = 'thepremanshu@gmail.com';
+        const CATEGORIES = ['Business', 'Portfolio', 'E-commerce', 'SaaS'];
+
+        // --- PREMIUM HACKER LOADING COMPONENT ---
+        function PremiumLoading() {
+            const [logs, setLogs] = useState([]);
+            const fullLogs = [
+                "INITIALIZING WEBFORGE CORE ENGINE v2.0...",
+                "MOUNTING PREMIUM UI COMPONENTS...",
+                "ESTABLISHING SECURE UPLINK...",
+                "COMPILING TAILWIND STYLESHEETS...",
+                "OPTIMIZING RENDER PERFORMANCE...",
+                "SYSTEM BOOT SUCCESSFUL. READY."
+            ];
+
+            useEffect(() => {
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < fullLogs.length) {
+                        setLogs(prev => [...prev, fullLogs[i]]);
+                        i++;
+                    }
+                }, 400); 
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <motion.div 
+                    initial={{ opacity: 1 }} 
+                    exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }} 
+                    transition={{ duration: 0.8, ease: "easeInOut" }} 
+                    className="fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col font-mono text-gray-300 overflow-hidden"
+                >
+                    {/* Ambient Glows matching website theme */}
+                    <div className="absolute top-[10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[150px] pointer-events-none animate-float z-0"></div>
+                    <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-[150px] pointer-events-none animate-float-delayed z-0"></div>
+                    
+                    <div className="absolute inset-0 pointer-events-none opacity-30 bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_4px] z-0"></div>
+                    
+                    <div className="flex-grow p-6 md:p-10 flex flex-col justify-end max-w-4xl w-full relative z-10 mx-auto">
+                        <div className="mb-8">
+                            <pre className="text-[6px] md:text-[10px] leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-8 hidden md:block drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+{`
+ __        __   _     _____                    
+ \\ \\      / /__| |__ |  ___|__  _ __ __ _  ___ 
+  \\ \\ /\\ / / _ \\ '_ \\| |_ / _ \\| '__/ _\` |/ _ \\
+   \\ V  V /  __/ |_) |  _| (_) | | | (_| |  __/
+    \\_/\\_/ \\___|_.__/|_|  \\___/|_|  \\__, |\\___|
+                                    |___/      
+`}
+                            </pre>
+                            {logs.map((log, index) => (
+                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} key={index} className="mb-2 text-xs md:text-sm drop-shadow-md">
+                                    <span className="opacity-40">[{new Date().toISOString().split('T')[1].slice(0,-1)}]</span> 
+                                    <span className="text-blue-500 font-bold ml-2">{">"}</span> 
+                                    <span className="font-semibold ml-2 text-gray-200">{log}</span>
+                                </motion.div>
+                            ))}
+                            <div className="mt-2 text-xs md:text-sm animate-pulse">
+                                <span className="opacity-40">[{new Date().toISOString().split('T')[1].slice(0,-1)}]</span> 
+                                <span className="text-purple-500 font-bold ml-2">{">"}</span> 
+                                <span className="font-bold ml-2 text-white">_</span>
+                            </div>
+                        </div>
+                        
+                        {/* Premium Gradient Progress Bar */}
+                        <div className="w-full border border-white/10 p-1 rounded-full mt-4 bg-black/50 shadow-[0_0_20px_rgba(59,130,246,0.1)] backdrop-blur-md">
+                            <motion.div 
+                                initial={{ width: "0%" }} 
+                                animate={{ width: "100%" }} 
+                                transition={{ duration: 3.2, ease: "easeInOut" }} 
+                                className="h-2 md:h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="py-6 text-center text-[10px] md:text-xs tracking-[0.4em] font-bold opacity-70 z-10 bg-transparent">
+                        DEVELOPED BY <span className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">APNA ADDA</span>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // --- MAIN APP ---
+        function App() {
+            const [user, setUser] = useState(null);
+            const [isAdmin, setIsAdmin] = useState(false);
+            
+            // Loading States
+            const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+            const [isMinTimePassed, setIsMinTimePassed] = useState(false);
+            
+            const [currentView, setCurrentView] = useState('home'); 
+            const [activeDemo, setActiveDemo] = useState(null);
+            const [activeOrder, setActiveOrder] = useState(null);
+            const [showAuth, setShowAuth] = useState(false);
+            
+            const [toast, setToast] = useState(null); 
+            const [confirmDialog, setConfirmDialog] = useState(null);
+            const [orderWizardDemo, setOrderWizardDemo] = useState(null);
+            
+            const [savedScroll, setSavedScroll] = useState(0);
+
+            // Ensure the premium loading screen runs for at least 3.5 seconds
+            useEffect(() => {
+                setTimeout(() => setIsMinTimePassed(true), 3500); 
+            }, []);
+
+            const showToast = (message, type = 'success') => {
+                setToast({ message, type });
+                setTimeout(() => setToast(null), 3500);
+            };
+
+            const askConfirm = (title, message, onConfirm, type = 'danger') => {
+                setConfirmDialog({ title, message, onConfirm, type });
+            };
+
+            const navigateTo = (view, preserveScroll = false) => {
+                setCurrentView(view);
+                if (!preserveScroll) {
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
+                }
+            };
+
+            useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged((u) => {
+                    if (u) {
+                        setUser(u);
+                        const isAdm = u.email === ADMIN_EMAIL;
+                        setIsAdmin(isAdm);
+                        if (isAdm && currentView === 'home' && !isAuthLoaded) setCurrentView('admin');
+                    } else {
+                        setUser(null); setIsAdmin(false);
+                        if(['admin', 'chat', 'myorders'].includes(currentView)) setCurrentView('home');
+                    }
+                    setIsAuthLoaded(true);
+                });
+                return unsubscribe;
+            }, []); 
+
+            useEffect(() => {
+                setTimeout(async () => {
+                    const snap = await db.collection('demos').limit(1).get();
+                    if (snap.empty) {
+                        const batch = db.batch(); let count = 1;
+                        CATEGORIES.forEach((cat, idx) => {
+                            for(let i=0; i<10; i++) {
+                                const ref = db.collection('demos').doc();
+                                batch.set(ref, {
+                                    demoNumber: count, title: `${cat} Premium Model ${i+1}`, category: cat,
+                                    description: `Premium highly-converting ${cat.toLowerCase()} layout featuring modern UI paradigms.`,
+                                    price: 1999 + Math.floor(Math.random() * 3000)
+                                });
+                                count++;
+                            }
+                        });
+                        await batch.commit();
+                    }
+                }, 1000);
+            }, []);
+
+            const loading = !(isAuthLoaded && isMinTimePassed);
+
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
+                    <AnimatePresence mode="wait">
+                        {loading ? (
+                            <PremiumLoading key="loader" />
+                        ) : (
+                            <motion.div key="app" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="w-full flex flex-col min-h-screen relative">
+                                
+                                <div className="fixed top-[10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[150px] pointer-events-none z-0 animate-float"></div>
+                                <div className="fixed bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-[150px] pointer-events-none z-0 animate-float-delayed"></div>
+
+                                <Navbar user={user} isAdmin={isAdmin} currentView={currentView} setCurrentView={navigateTo} setShowAuth={setShowAuth} askConfirm={askConfirm} showToast={showToast} />
+
+                                <main className="flex-grow pt-24 px-4 md:px-6 max-w-7xl mx-auto w-full relative z-10 pb-28 md:pb-12">
+                                    <AnimatePresence mode="wait">
+                                        {currentView === 'home' && <Home key="home" setCurrentView={navigateTo} user={user} setShowAuth={setShowAuth} />}
+                                        {currentView === 'demos' && <Demos key="demos" categories={CATEGORIES} setCurrentView={navigateTo} setActiveDemo={setActiveDemo} user={user} setShowAuth={setShowAuth} db={db} setOrderWizardDemo={setOrderWizardDemo} savedScroll={savedScroll} setSavedScroll={setSavedScroll} />}
+                                        {currentView === 'preview' && <DemoPreview key="preview" demo={activeDemo} setCurrentView={navigateTo} setOrderWizardDemo={setOrderWizardDemo} user={user} setShowAuth={setShowAuth} />}
+                                        {currentView === 'custom' && <CustomOrder key="custom" user={user} db={db} setCurrentView={navigateTo} showToast={showToast} />}
+                                        {currentView === 'myorders' && <MyOrders key="myorders" user={user} db={db} setCurrentView={navigateTo} askConfirm={askConfirm} showToast={showToast} />}
+                                        {currentView === 'chat' && <AdminChat key="chat" order={activeOrder} user={user} isAdmin={isAdmin} db={db} setCurrentView={navigateTo} showToast={showToast} />}
+                                        {currentView === 'admin' && isAdmin && <AdminPanel key="admin" db={db} setCurrentView={navigateTo} setActiveOrder={setActiveOrder} showToast={showToast} askConfirm={askConfirm} />}
+                                    </AnimatePresence>
+                                </main>
+
+                                {currentView !== 'preview' && <Footer />}
+                                
+                                <MobileBottomNav user={user} isAdmin={isAdmin} currentView={currentView} setCurrentView={navigateTo} />
+
+                                {showAuth && <AuthModal setShowAuth={setShowAuth} showToast={showToast} />}
+                                {orderWizardDemo && <DemoOrderWizard demo={orderWizardDemo} user={user} db={db} onClose={() => setOrderWizardDemo(null)} setCurrentView={navigateTo} showToast={showToast} />}
+                                {confirmDialog && <CustomConfirm dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />}
+
+                                <AnimatePresence>
+                                    {toast && (
+                                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="fixed bottom-24 md:bottom-10 right-0 left-0 md:left-auto md:right-10 z-[999] px-4 md:px-0 flex justify-center">
+                                            <div className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 font-semibold text-white ${toast.type === 'error' ? 'bg-red-600/95 border-red-500' : 'bg-green-600/95 border-green-500'} backdrop-blur-xl border shadow-[0_10px_40px_rgba(0,0,0,0.5)]`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'} shadow-inner`}>
+                                                    {toast.type === 'success' ? '✓' : '✕'}
+                                                </div>
+                                                {toast.message}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        }
+
+        // --- COMPONENTS ---
+
+        function AnimatedCodeLogo() {
+            return (
+                <div className="relative w-9 h-9 flex items-center justify-center bg-gradient-to-br from-blue-900/40 to-purple-900/40 rounded-xl border border-blue-500/30 overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-600/20" />
+                    <svg className="w-5 h-5 text-blue-300 relative z-10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }} strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                </div>
+            );
+        }
+
+        function Navbar({ user, isAdmin, currentView, setCurrentView, setShowAuth, askConfirm, showToast }) {
+            const [showProfile, setShowProfile] = useState(false);
+
+            const navItems = [
+                { id: 'home', label: 'Home' },
+                { id: 'demos', label: 'Marketplace' },
+                ...(user && !isAdmin ? [{ id: 'custom', label: 'Custom Build' }] : []),
+                ...(user ? [{ id: 'myorders', label: 'My Orders' }] : []),
+                ...(isAdmin ? [{ id: 'admin', label: 'Admin Panel' }] : [])
+            ];
+
+            const handleLogout = () => {
+                setShowProfile(false);
+                askConfirm("Secure Logout", "Are you sure you want to log out of your WebForge account?", async () => {
+                    await auth.signOut();
+                    showToast("Logged out successfully.", "success");
+                    setCurrentView('home');
+                }, "danger");
+            };
+
+            return (
+                <nav className="fixed top-0 w-full z-50 glass-panel border-b border-white/10 rounded-none bg-background/80 backdrop-blur-xl">
+                    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                        <div className="text-2xl font-bold tracking-tighter cursor-pointer flex items-center gap-3" onClick={() => setCurrentView('home')}>
+                            <AnimatedCodeLogo />
+                            <span className="text-white neon-text hidden sm:block">WebForge</span>
+                        </div>
+                        
+                        <div className="hidden md:flex gap-6 text-sm font-medium text-gray-400 relative">
+                            {navItems.map(item => (
+                                <button 
+                                    key={item.id}
+                                    onClick={() => setCurrentView(item.id)} 
+                                    className={`relative px-3 py-2 transition-colors duration-300 ${currentView === item.id ? 'text-white' : 'hover:text-gray-200'}`}
+                                >
+                                    {item.label}
+                                    {currentView === item.id && (
+                                        <motion.div 
+                                            layoutId="nav-underline" 
+                                            className="absolute left-0 bottom-0 w-full h-[3px] bg-gradient-to-r from-blue-500 to-purple-500 rounded-t-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div>
+                            {user ? (
+                                <div className="relative">
+                                    <button onClick={() => setShowProfile(!showProfile)} className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] border-2 border-white/20 hover:scale-105 transition transform z-50">
+                                        {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                                    </button>
+                                    
+                                    <AnimatePresence>
+                                        {showProfile && (
+                                            <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setShowProfile(false)}></div>
+                                                <motion.div initial={{opacity:0, y:10, scale:0.95}} animate={{opacity:1, y:0, scale:1}} exit={{opacity:0, scale:0.95}} className="absolute right-0 mt-3 w-56 glass-panel bg-black/95 border border-white/10 rounded-2xl p-2 flex flex-col z-50 shadow-2xl">
+                                                    <div className="px-4 py-3 border-b border-white/10 mb-2 text-center">
+                                                        <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center font-black text-white shadow-lg mb-2 text-lg">
+                                                            {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                                                        </div>
+                                                        <div className="text-sm font-bold text-white truncate">{user.displayName || 'User'}</div>
+                                                        <div className="text-xs text-gray-400 truncate">{user.email}</div>
+                                                    </div>
+                                                    <button onClick={handleLogout} className="w-full text-left px-4 py-2.5 text-sm text-red-400 font-bold hover:bg-red-500/10 rounded-xl transition flex items-center gap-3">
+                                                        <span>🚪</span> Secure Logout
+                                                    </button>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ) : (
+                                <button onClick={() => setShowAuth(true)} className="px-6 py-2 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition shadow-[0_0_20px_rgba(255,255,255,0.4)]">Login</button>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        function MobileBottomNav({ user, isAdmin, currentView, setCurrentView }) {
+            const icons = {
+                home: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>,
+                demos: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>,
+                custom: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>,
+                myorders: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>,
+                admin: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            };
+
+            const items = [
+                { id: 'home', label: 'Home' },
+                { id: 'demos', label: 'Store' },
+                ...(user && !isAdmin ? [{ id: 'custom', label: 'Custom' }] : []),
+                ...(user ? [{ id: 'myorders', label: 'Orders' }] : []),
+                ...(isAdmin ? [{ id: 'admin', label: 'Admin' }] : [])
+            ];
+
+            return (
+                <div className="md:hidden fixed bottom-0 left-0 w-full glass-panel bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/10 z-50 px-2 py-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                    <div className="flex justify-around items-center">
+                        {items.map(item => {
+                            const isActive = currentView === item.id;
+                            return (
+                                <button 
+                                    key={item.id} 
+                                    onClick={() => setCurrentView(item.id)} 
+                                    className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 w-16 ${isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+                                >
+                                    <div className={`relative ${isActive ? 'transform -translate-y-1' : ''}`}>
+                                        {icons[item.id]}
+                                        {isActive && <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full"></div>}
+                                    </div>
+                                    <span className={`text-[10px] font-bold ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        function Footer() {
+            return (
+                <footer className="w-full glass-panel border-t border-white/10 mt-auto py-6 relative z-10 bg-background/90 hidden md:block">
+                    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <AnimatedCodeLogo />
+                            <span className="text-white font-bold text-sm tracking-wide">WebForge</span>
+                            <span className="text-gray-500 text-xs ml-2">© 2026</span>
+                        </div>
+                        
+                        <div className="flex gap-4">
+                            <a href="https://t.me/apnaadda_official" target="_blank" className="text-gray-400 hover:text-blue-400 transition" title="Telegram">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                            </a>
+                            <a href="https://youtube.com/@apnaadda_official?si=wKVEJSn4oMPTbTmY" target="_blank" className="text-gray-400 hover:text-red-500 transition" title="YouTube">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </a>
+                            <a href="mailto:thepremanshu@gmail.com" className="text-gray-400 hover:text-green-400 transition" title="Email Us">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            </a>
+                        </div>
+
+                        <div className="text-gray-500 text-xs">
+                            Developed By <a href="http://apnaadda.free.nf/?i=1" target="_blank" className="text-gray-300 hover:text-white transition font-semibold">APNA ADDA</a>
+                        </div>
+                    </div>
+                </footer>
+            );
+        }
+
+        function CustomConfirm({ dialog, onClose }) {
+            return (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
+                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-sm glass-panel p-8 rounded-3xl border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-center relative overflow-hidden bg-[#111]">
+                        <div className={`absolute top-0 left-0 w-full h-2 ${dialog.type === 'danger' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-6 text-3xl shadow-inner ${dialog.type === 'danger' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-blue-500/20 text-blue-500 border border-blue-500/30'}`}>
+                            {dialog.type === 'danger' ? '⚠️' : '❓'}
+                        </div>
+                        <h3 className="text-2xl font-black mb-3">{dialog.title}</h3>
+                        <p className="text-gray-400 text-sm mb-8 leading-relaxed">{dialog.message}</p>
+                        <div className="flex gap-4 justify-center">
+                            <button onClick={onClose} className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-sm font-semibold transition border border-white/10 w-full">Cancel</button>
+                            <button onClick={() => { dialog.onConfirm(); onClose(); }} className={`px-6 py-3 rounded-xl text-white text-sm font-bold shadow-lg transition w-full ${dialog.type === 'danger' ? 'bg-red-600 hover:bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]'}`}>Confirm</button>
+                        </div>
+                    </motion.div>
+                </div>
+            );
+        }
+
+        // --- REAL MOCK WEBSITES (Completely unique generator per demoNumber) ---
+        function RealMockWebsite({ demo, isThumbnail = false }) {
+            const theme = useMemo(() => {
+                const seedRandom = (s) => { let x = Math.sin(s++) * 10000; return x - Math.floor(x); };
+                const s = demo.demoNumber;
+                const colors = ['#3b82f6', '#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#f43f5e'];
+                const fonts = ['font-sans', 'font-serif', 'font-mono'];
+                const layouts = ['text-center items-center', 'text-left items-start', 'text-right items-end flex-row-reverse'];
+                
+                const isDark = seedRandom(s) > 0.5;
+                const mainColor = colors[Math.floor(seedRandom(s+1) * colors.length)];
+                const fontClass = fonts[Math.floor(seedRandom(s+2) * fonts.length)];
+                const layoutClass = layouts[Math.floor(seedRandom(s+3) * layouts.length)];
+
+                const bgColor = isDark ? '#0f1115' : '#f8fafc';
+                const textColor = isDark ? '#f1f5f9' : '#0f172a';
+                const cardBg = isDark ? '#1e293b' : '#ffffff';
+
+                const industries = ["Tech", "Design", "Commerce", "Health", "Finance", "Edu", "Cloud"];
+                const verbs = ["Elevate", "Transform", "Build", "Scale", "Create", "Manage", "Optimize"];
+                const nouns = ["Future", "Business", "Brand", "Ideas", "Platform", "Journey", "System"];
+
+                const ind = industries[Math.floor(seedRandom(s+4) * industries.length)];
+                const v = verbs[Math.floor(seedRandom(s+5) * verbs.length)];
+                const n = nouns[Math.floor(seedRandom(s+6) * nouns.length)];
+
+                return { mainColor, bgColor, textColor, cardBg, fontClass, layoutClass, isDark, brandName: `${ind}Forge.`, heroTitle: `${v} Your ${n}`, subText: `The ultimate ${demo.category.toLowerCase()} solution built for scale and performance.`, aboutHeadline: `Leading ${ind} Innovation`, aboutBody: `We focus on delivering value through exceptional design and robust code perfectly suited for the ${demo.category.toLowerCase()} market.` };
+            }, [demo.demoNumber]);
+
+            return (
+                <div style={{ backgroundColor: theme.bgColor, color: theme.textColor }} className={`w-full h-full ${isThumbnail ? 'overflow-hidden hide-scrollbar pointer-events-none select-none' : 'overflow-y-auto'} ${theme.fontClass} transition-all duration-300`}>
+                    <nav className="flex justify-between items-center p-6 border-b border-gray-500/10">
+                        <div className="font-black text-2xl tracking-tighter" style={{color: theme.mainColor}}>{theme.brandName}</div>
+                        <div className="hidden md:flex gap-8 font-semibold opacity-80 text-sm">
+                            <span>Home</span><span>Features</span><span>Pricing</span>
+                            <span className="px-4 py-1 rounded border" style={{borderColor: theme.mainColor, color: theme.mainColor}}>Login</span>
+                        </div>
+                    </nav>
+
+                    <div className={`py-24 px-8 max-w-6xl mx-auto flex flex-col md:flex-row gap-12 ${theme.layoutClass}`}>
+                        <div className="flex-1 w-full">
+                            <div className="inline-block px-3 py-1 mb-6 text-xs font-bold uppercase rounded-full border border-gray-500/30 opacity-70">Version 2.0 Live</div>
+                            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight" style={{ letterSpacing: theme.fontClass==='font-serif'? '-0.02em':'normal' }}>
+                                {theme.heroTitle}
+                            </h1>
+                            <p className="text-xl opacity-70 mb-10 max-w-xl">
+                                {theme.subText}
+                            </p>
+                            <div className="flex gap-4 flex-wrap">
+                                <button style={{backgroundColor: theme.mainColor}} className="px-8 py-4 text-white font-bold rounded-lg shadow-xl">Get Started</button>
+                                <button className="px-8 py-4 font-bold rounded-lg border border-gray-500/30 opacity-80">Learn More</button>
+                            </div>
+                        </div>
+                        {(!theme.layoutClass.includes('text-center') && !isThumbnail) && (
+                            <div className="flex-1 w-full hidden md:block">
+                                <div className="w-full h-80 rounded-2xl shadow-2xl bg-gradient-to-tr from-gray-800 to-gray-600 flex items-center justify-center overflow-hidden border border-gray-500/20">
+                                    <div className="w-3/4 h-3/4 border-2 border-white/10 rounded flex flex-col p-4 shadow-inner bg-black/20">
+                                        <div className="flex gap-2 mb-4"><div className="w-3 h-3 rounded-full bg-red-400"></div><div className="w-3 h-3 rounded-full bg-yellow-400"></div><div className="w-3 h-3 rounded-full bg-green-400"></div></div>
+                                        <div className="flex-grow bg-white/5 rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{backgroundColor: theme.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}} className="py-24 px-8 border-t border-gray-500/10">
+                        <div className="max-w-6xl mx-auto text-center">
+                            <h2 className="text-3xl font-bold mb-12" style={{color: theme.mainColor}}>{theme.aboutHeadline}</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                                {[1,2,3].map(i => (
+                                    <div key={i} style={{backgroundColor: theme.cardBg}} className="p-8 rounded-2xl shadow-lg border border-gray-500/10">
+                                        <div style={{backgroundColor: theme.mainColor}} className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold mb-6">0{i}</div>
+                                        <h3 className="font-bold text-xl mb-3">Feature Element {i}</h3>
+                                        <p className="opacity-60 text-sm leading-relaxed">Integrated seamlessly to provide robust capabilities specifically tuned for your industry metrics.</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- HOME PAGE (Upgraded with Premium Effects & Abbreviations) ---
+        function Home({ setCurrentView, user, setShowAuth }) {
+            const handleCustom = () => {
+                if(!user) return setShowAuth(true);
+                setCurrentView('custom');
+            };
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center mt-6 md:mt-12 overflow-hidden w-full">
+                    
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col items-center relative z-10 w-full">
+                        <div className="inline-block px-5 py-2 rounded-full glass-panel text-[10px] md:text-xs text-purple-400 font-bold mb-8 animate-float uppercase tracking-widest border border-purple-500/30 bg-purple-500/5">Developed By APNA ADDA</div>
+                        <h1 className="text-5xl sm:text-6xl md:text-[5.5rem] font-black mb-8 tracking-tighter leading-tight w-full">Craft Your Digital <br/><span className="gradient-text neon-text">Masterpiece</span></h1>
+                        <p className="text-gray-400 max-w-2xl text-base md:text-xl mb-12 leading-relaxed px-4">Engineered to perfection. Explore our marketplace of dynamic code-based templates, or commission a completely custom architecture tailored for your scaling business.</p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto px-4">
+                            <button onClick={() => setCurrentView('demos')} className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all transform hover:-translate-y-1 text-lg w-full sm:w-auto shadow-lg">Explore Marketplace</button>
+                            <button onClick={handleCustom} className="px-8 py-4 rounded-xl glass-panel text-white font-black hover:bg-white/10 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 text-lg border border-white/20 shadow-lg w-full sm:w-auto">Order Custom Build 🚀</button>
+                        </div>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="mt-20 w-full max-w-2xl px-4 z-10">
+                        <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-center gap-4 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                            <div className="w-12 h-12 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0">💵</div>
+                            <div className="text-center sm:text-left">
+                                <h4 className="text-green-400 font-black text-sm uppercase tracking-widest">Payment Policy Notice</h4>
+                                <p className="text-gray-300 text-sm font-medium mt-1">Please note that currently, <strong className="text-white">Only Cash is Accepted</strong> for all transactions and orders.</p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full mt-24 px-4 max-w-6xl mx-auto relative z-10">
+                        {[
+                            { label: 'Websites Sold', value: '5K+' },
+                            { label: 'Client Satisfaction', value: '99%' },
+                            { label: 'Avg Turnaround', value: '48 Hrs' },
+                            { label: 'Uptime SLA', value: '99.9%' }
+                        ].map((stat, i) => (
+                            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} key={i} className="glass-panel p-6 md:p-8 rounded-3xl flex flex-col items-center justify-center border border-white/5 shadow-2xl bg-gradient-to-br from-white/5 to-transparent hover:border-blue-500/30 transition-colors">
+                                <span className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 drop-shadow-md mb-2">{stat.value}</span>
+                                <span className="text-[10px] md:text-xs text-gray-400 font-black uppercase tracking-widest text-center">{stat.label}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className="w-full mt-32 px-4 text-left max-w-6xl mx-auto z-10 relative">
+                        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-black mb-4">Enterprise-Grade Architecture</h2>
+                            <p className="text-gray-400 max-w-2xl mx-auto text-lg">We implement modern development paradigms ensuring your web presence is optimized for performance, scalability, and conversion.</p>
+                        </motion.div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {[
+                                { title: 'Advanced UI / UX', icon: '🎨', color: 'blue', desc: 'Superior User Interface & User Experience design focusing on user retention and journey mapping.' },
+                                { title: 'Optimized SEO', icon: '🔍', color: 'purple', desc: 'Deep Search Engine Optimization strategies built directly into the core code for maximum visibility.' },
+                                { title: 'Maximized ROI', icon: '📈', color: 'green', desc: 'High-conversion layouts strictly designed to ensure massive Return On Investment for your business.' },
+                                { title: 'SSR & SSG', icon: '⚡', color: 'pink', desc: 'Server-Side Rendering & Static Site Generation techniques for lightning-fast page load speeds.' }
+                            ].map((feature, i) => (
+                                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ delay: i * 0.1 }} key={i} className="glass-panel p-8 rounded-3xl border border-white/10 hover:border-white/30 transition-all bg-[#0d0d0d] shadow-xl group">
+                                    <div className={`w-14 h-14 rounded-2xl bg-${feature.color}-500/20 text-${feature.color}-400 flex items-center justify-center text-2xl mb-6 shadow-inner group-hover:scale-110 transition-transform`}>{feature.icon}</div>
+                                    <h3 className="text-xl font-black mb-3 text-white uppercase tracking-wide">{feature.title}</h3>
+                                    <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full mt-32 px-4 max-w-5xl mx-auto mb-20 z-10 relative">
+                        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-black mb-4">How WebForge Works</h2>
+                            <p className="text-gray-400 max-w-xl mx-auto text-lg">A simple, transparent, and direct process from concept to deployment.</p>
+                        </motion.div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-1 bg-white/10 -translate-y-1/2 z-0 rounded-full"></div>
+
+                            {[
+                                { step: '01', title: 'Select or Request', desc: 'Choose a premium template from our marketplace or submit a custom build request with your specific requirements.' },
+                                { step: '02', title: 'Direct Collaboration', desc: 'Instantly connect with our engineering team via your dedicated Order Dashboard chat. Refine details seamlessly.' },
+                                { step: '03', title: 'Rapid Delivery', desc: 'Review the final deployed build. All transactions are securely finalized in cash upon successful completion.' }
+                            ].map((step, i) => (
+                                <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} key={i} className="glass-panel p-8 rounded-3xl border border-white/10 bg-[#111] z-10 text-center shadow-2xl relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-xl font-black text-white shadow-lg mb-6 border-4 border-[#0a0a0a]">{step.step}</div>
+                                    <h3 className="text-xl font-black mb-3 text-white">{step.title}</h3>
+                                    <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // --- DEMOS PAGE ---
+        function Demos({ setCurrentView, setActiveDemo, categories, user, setShowAuth, db, setOrderWizardDemo, savedScroll, setSavedScroll }) {
+            const [demos, setDemos] = useState([]);
+            const [filter, setFilter] = useState('All');
+            const filters = ['All', ...categories];
+
+            const scrollPosRef = useRef(savedScroll);
+
+            useEffect(() => {
+                db.collection('demos').orderBy('demoNumber').get().then(snap => {
+                    setDemos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                    
+                    setTimeout(() => {
+                        window.scrollTo({ top: savedScroll, behavior: 'auto' });
+                    }, 50);
+                });
+
+                const handleScroll = () => { scrollPosRef.current = window.scrollY; };
+                window.addEventListener('scroll', handleScroll, { passive: true });
+
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                    setSavedScroll(scrollPosRef.current);
+                };
+            }, []);
+
+            const triggerOrder = (demo) => {
+                if (!user) return setShowAuth(true);
+                setOrderWizardDemo(demo);
+            };
+
+            const renderDemoCards = (items) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {items.map((demo) => (
+                        <motion.div layout key={demo.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ y: -8 }} className="glass-panel p-5 rounded-3xl flex flex-col group overflow-hidden border border-white/10 shadow-2xl">
+                            <div className="h-64 w-full rounded-2xl mb-5 overflow-hidden relative border border-white/5 group-hover:border-blue-500/50 transition-all duration-500 bg-black">
+                                <div className="w-[400%] h-[400%] origin-top-left transform scale-[0.25] pointer-events-none absolute top-0 left-0 bg-background">
+                                    <RealMockWebsite demo={demo} isThumbnail={true} />
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
+                                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest text-white px-2 py-1 rounded bg-black/60 backdrop-blur border border-white/20 z-10">{demo.category}</span>
+                                <div className="absolute bottom-4 left-4 z-10">
+                                    <h1 className="text-xl font-black text-white drop-shadow-lg leading-tight mb-1">{demo.title}</h1>
+                                    <span className="text-sm font-bold text-gray-300 drop-shadow-md">Demo #{demo.demoNumber}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-start mb-3 gap-2 px-1">
+                                <p className="text-gray-400 text-sm flex-grow line-clamp-2 leading-relaxed">{demo.description}</p>
+                                <span className="text-green-400 font-black text-lg whitespace-nowrap bg-green-500/10 px-2 py-1 rounded border border-green-500/20">₹{demo.price}</span>
+                            </div>
+                            
+                            <div className="flex gap-3 mt-auto pt-4 border-t border-white/5">
+                                <button onClick={() => { setActiveDemo(demo); setCurrentView('preview'); }} className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/15 text-white text-sm font-bold transition border border-white/10 shadow-lg">Live Preview</button>
+                                <button onClick={() => triggerOrder(demo)} className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition shadow-[0_0_20px_rgba(59,130,246,0.4)]">Order Now</button>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            );
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full relative mt-6 md:mt-0">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md">
+                        <div className="flex gap-2 overflow-x-auto w-full pb-2 md:pb-0 hide-scrollbar">
+                            {filters.map(c => (
+                                <button 
+                                    key={c} 
+                                    onClick={() => setFilter(c)} 
+                                    className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${filter === c ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}>
+                                    {c} Layouts
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {filter === 'All' ? (
+                        <div className="space-y-20">
+                            {categories.map(cat => {
+                                const catDemos = demos.filter(d => d.category === cat).slice(0, 3);
+                                if(catDemos.length === 0) return null;
+                                return (
+                                    <div key={cat}>
+                                        <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-4">
+                                            <h3 className="text-3xl font-black text-white">{cat} <span className="text-blue-500">Edition</span></h3>
+                                            <button onClick={()=>setFilter(cat)} className="text-sm font-bold text-gray-400 hover:text-blue-400 bg-white/5 px-4 py-2 rounded-lg transition">View All {cat} →</button>
+                                        </div>
+                                        {renderDemoCards(catDemos)}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    ) : (
+                        <div>
+                            <h3 className="text-3xl font-black mb-8 border-b border-white/10 pb-4 inline-block">{filter} Templates</h3>
+                            {renderDemoCards(demos.filter(d => d.category === filter))}
+                        </div>
+                    )}
+                </motion.div>
+            );
+        }
+
+        // --- STACKED DEMO PREVIEW WITH FLOATING BACK BUTTON ---
+        function DemoPreview({ demo, setCurrentView, setOrderWizardDemo, user, setShowAuth }) {
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-background flex flex-col overflow-hidden">
+                    <div className="h-[72px] border-b border-white/10 flex items-center justify-between px-4 md:px-8 bg-black backdrop-blur-xl z-20 shadow-2xl flex-shrink-0">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setCurrentView('demos', true)} className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-sm font-bold text-white border border-white/10">
+                                ← Return to Marketplace
+                            </button>
+                            <span className="md:hidden font-black text-lg text-white flex items-center gap-2"><AnimatedCodeLogo /> Preview</span>
+                        </div>
+                        <div className="flex gap-4 md:gap-6 items-center">
+                            <div className="hidden md:flex flex-col text-right">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pricing</span>
+                                <span className="text-green-400 font-black text-xl leading-none">₹{demo?.price}</span>
+                            </div>
+                            <button onClick={() => user ? setOrderWizardDemo(demo) : setShowAuth(true)} className="px-6 md:px-8 py-2 md:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-xs md:text-sm font-black shadow-[0_0_20px_rgba(59,130,246,0.4)] transition transform hover:scale-105">Order Design</button>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-grow overflow-y-auto bg-[#0a0a0a] relative">
+                        
+                        <div className="w-full p-0 md:p-8 h-[85vh] md:h-[80vh] flex-shrink-0 relative">
+                            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full h-full glass-panel md:rounded-3xl flex flex-col overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] border-white/20 relative">
+                                
+                                {/* 🔴 FLOATING BACK BUTTON INSIDE PREVIEW */}
+                                <button onClick={() => setCurrentView('demos', true)} className="absolute top-4 left-4 z-[90] w-12 h-12 bg-black/60 backdrop-blur-md border border-white/20 rounded-full shadow-2xl flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all group" title="Go Back to Marketplace">
+                                    <svg className="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                </button>
+
+                                <div className="h-12 bg-[#1a1a1a] border-b border-white/10 flex items-center px-4 md:px-6 gap-3 flex-shrink-0 pl-20 md:pl-6">
+                                    <div className="hidden md:flex gap-2 mr-4">
+                                        <div className="w-3.5 h-3.5 rounded-full bg-red-500/80 border border-red-500"></div>
+                                        <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/80 border border-yellow-500"></div>
+                                        <div className="w-3.5 h-3.5 rounded-full bg-green-500/80 border border-green-500"></div>
+                                    </div>
+                                    <div className="flex-grow px-4 py-1.5 rounded-md bg-black/50 border border-white/5 text-xs text-gray-400 text-center truncate font-mono shadow-inner max-w-xl md:max-w-2xl md:mx-auto">
+                                        🔒 live-preview.webforge.app/model/{demo?.demoNumber}
+                                    </div>
+                                </div>
+                                <div className="flex-grow relative bg-black overflow-y-auto">
+                                    <RealMockWebsite demo={demo} />
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
+                            <div className="text-center mb-16">
+                                <span className="text-blue-400 font-black text-xs uppercase tracking-widest mb-3 block">Template Architecture</span>
+                                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">{demo?.title}</h2>
+                                <span className="inline-block px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-mono text-gray-300 font-bold">{demo?.category} Industry Specific</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                                <div className="glass-panel p-8 rounded-3xl border-white/10">
+                                    <h4 className="text-lg font-black text-white mb-4 flex items-center gap-2 uppercase tracking-wide">📖 Design Overview</h4>
+                                    <p className="text-gray-400 leading-relaxed text-sm md:text-base">{demo?.description} This exact layout algorithm generates the unique color schemes, typography choices, and scalable sections you interacted with in the preview above.</p>
+                                </div>
+                                
+                                <div className="glass-panel p-8 rounded-3xl border-white/10">
+                                    <h4 className="text-lg font-black text-white mb-4 flex items-center gap-2 uppercase tracking-wide">✨ Technical Specs</h4>
+                                    <ul className="text-gray-400 space-y-4 text-sm md:text-base">
+                                        <li className="flex items-center gap-4"><span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold flex-shrink-0">✓</span> Fully Responsive UI across all devices</li>
+                                        <li className="flex items-center gap-4"><span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold flex-shrink-0">✓</span> Customized Dynamic Color System</li>
+                                        <li className="flex items-center gap-4"><span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold flex-shrink-0">✓</span> Fast React Component Architecture</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pb-32 text-center px-6">
+                            <div className="max-w-2xl mx-auto bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-blue-500/30 rounded-3xl shadow-2xl p-10">
+                                <h3 className="text-2xl font-black text-white mb-4">Ready to Build with Template #{demo?.demoNumber}?</h3>
+                                <p className="text-blue-200 text-sm mb-8">Secure this design now. Our engineers will adapt this layout for your specific brand and requirements immediately.</p>
+                                <button onClick={() => user ? setOrderWizardDemo(demo) : setShowAuth(true)} className="w-full md:w-auto px-12 py-4 rounded-xl bg-white text-blue-900 font-black text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                                    Place Order - ₹{demo?.price}
+                                </button>
+                                <p className="text-gray-400 text-xs mt-4 font-bold uppercase tracking-widest">Only Cash Accepted</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </motion.div>
+            );
+        }
+
+        function DemoOrderWizard({ demo, user, db, onClose, setCurrentView, showToast }) {
+            const [choice, setChoice] = useState(''); 
+            const [specialMsg, setSpecialMsg] = useState('');
+            const [state, setState] = useState('');
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            const handleFinalSubmit = async (e) => {
+                e.preventDefault();
+                if(!state) return showToast("Please select your State", "error");
+                if(choice === 'special' && !specialMsg.trim()) return showToast("Please write your special message", "error");
+                
+                setIsSubmitting(true);
+                try {
+                    const orderRef = await db.collection('orders').add({
+                        userId: user.uid, username: user.displayName || user.email.split('@')[0],
+                        demoId: demo.id, demoNumber: demo.demoNumber, price: demo.price, status: 'Pending', hasUserReplied: false,
+                        orderType: choice, specialMessage: choice === 'special' ? specialMsg : 'Exact Same Template',
+                        state, district: 'N/A',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastMessage: `System: Order Created for Demo #${demo.demoNumber}.`, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    await db.collection('messages').add({ orderId: orderRef.id, senderId: 'admin', text: `System: Order placed for Template #${demo.demoNumber}. Requirements: ${choice === 'special' ? specialMsg : 'Build Exactly As Previewed'}`, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    
+                    showToast("Order Placed Successfully! Check your Orders Dashboard.", 'success');
+                    onClose();
+                    setCurrentView('myorders');
+                } catch (e) { showToast("Error placing order.", 'error'); setIsSubmitting(false); }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 backdrop-blur-md px-4 py-8 overflow-y-auto">
+                    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xl glass-panel p-6 md:p-10 rounded-3xl border-white/20 relative shadow-[0_0_50px_rgba(0,0,0,0.8)] my-auto">
+                        <button onClick={onClose} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition">✕</button>
+                        
+                        <div className="mb-8 pr-8">
+                            <span className="text-blue-400 font-black text-xs uppercase tracking-widest mb-1 block">Checkout Step</span>
+                            <h3 className="text-2xl md:text-4xl font-black">Finalize Order</h3>
+                            <p className="text-gray-400 text-sm mt-2">Ordering <strong className="text-white">Demo #{demo.demoNumber}</strong> for <strong className="text-green-400">₹{demo.price}</strong>.</p>
+                        </div>
+
+                        <form onSubmit={handleFinalSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-300 mb-3">1. How do you want it built?</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div onClick={() => setChoice('exact')} className={`p-4 rounded-2xl cursor-pointer border-2 transition-all ${choice === 'exact' ? 'border-blue-500 bg-blue-500/20 shadow-inner' : 'border-white/10 bg-[#111] hover:border-white/30'}`}>
+                                        <div className="font-bold text-white mb-1">✅ Exact Match</div>
+                                        <div className="text-xs text-gray-400">Build exactly like the preview.</div>
+                                    </div>
+                                    <div onClick={() => setChoice('special')} className={`p-4 rounded-2xl cursor-pointer border-2 transition-all ${choice === 'special' ? 'border-purple-500 bg-purple-500/20 shadow-inner' : 'border-white/10 bg-[#111] hover:border-white/30'}`}>
+                                        <div className="font-bold text-white mb-1">✍️ Need Tweaks</div>
+                                        <div className="text-xs text-gray-400">I want to customize colors/text.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {choice === 'special' && (
+                                <motion.div initial={{opacity:0, h:0}} animate={{opacity:1, h:'auto'}}>
+                                    <label className="block text-sm font-bold text-gray-300 mb-2">What modifications do you need?</label>
+                                    <textarea required rows="3" value={specialMsg} onChange={e=>setSpecialMsg(e.target.value)} placeholder="E.g., Please change the main color to red, and use my logo..." className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-purple-500 transition resize-none"></textarea>
+                                </motion.div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-300 mb-2">2. Select Your State</label>
+                                <select required value={state} onChange={e=> setState(e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 outline-none appearance-none cursor-pointer font-bold">
+                                    <option value="">-- Choose State / UT --</option>
+                                    {Object.keys(INDIA_STATES).map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="pt-6 border-t border-white/10 mt-6 text-center">
+                                <button type="submit" disabled={isSubmitting || !choice} className={`w-full py-4 rounded-xl text-white font-black text-lg transition shadow-lg mb-3 ${!choice ? 'bg-gray-600 cursor-not-allowed opacity-50' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-[1.02]'}`}>
+                                    {isSubmitting ? 'Processing...' : 'Confirm & Place Order'}
+                                </button>
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center w-full block">Notice: Only Cash Accepted</span>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            );
+        }
+
+        function CustomOrder({ user, db, setCurrentView, showToast }) {
+            const [form, setForm] = useState({ name: '', description: '', reqs: '' });
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            
+            const submitCustom = async (e) => {
+                e.preventDefault();
+                try {
+                    const orderRef = await db.collection('orders').add({
+                        userId: user.uid, username: user.displayName || user.email.split('@')[0],
+                        demoId: 'custom', demoNumber: 'Custom', price: 'TBD', status: 'Pending', hasUserReplied: false,
+                        websiteName: form.name, description: form.description, requirements: form.reqs,
+                        state: 'N/A', district: 'N/A', specialMessage: form.reqs,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastMessage: `System: Custom Request Created.`, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    await db.collection('messages').add({ orderId: orderRef.id, senderId: 'admin', text: `System: Custom request submitted for "${form.name}". Requirements: ${form.reqs}`, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    setIsSubmitted(true);
+                    showToast('Custom Request Submitted Successfully!', 'success');
+                } catch(e) { showToast("Error submitting request.", 'error'); }
+            };
+
+            return (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-3xl mx-auto mt-6 md:mt-10">
+                    
+                    <div className="mb-6">
+                        <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-bold text-white w-fit">
+                            ← Go Back
+                        </button>
+                    </div>
+
+                    <div className="glass-panel p-6 md:p-10 rounded-3xl shadow-2xl border-white/10">
+                        <div className="mb-10 text-center">
+                            <span className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg mb-6">🚀</span>
+                            <h2 className="text-3xl md:text-5xl font-black mb-3">Request Custom Build</h2>
+                            <p className="text-gray-400 text-base md:text-lg">Describe your exact requirements, and our engineers will code it perfectly from scratch.</p>
+                        </div>
+                        <form onSubmit={submitCustom} className="space-y-6">
+                            <div><label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-widest">Project Name</label><input required disabled={isSubmitted} type="text" placeholder="E.g., TechForge SaaS Platform" className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} /></div>
+                            <div><label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-widest">Short Tagline</label><input required disabled={isSubmitted} type="text" placeholder="E.g., A platform for connecting freelance designers." className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition" value={form.description} onChange={e=>setForm({...form, description: e.target.value})} /></div>
+                            <div><label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-widest">Detailed Requirements</label><textarea required disabled={isSubmitted} rows="5" placeholder="Explain everything you need: pages, colors, features, inspirations..." className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition resize-none" value={form.reqs} onChange={e=>setForm({...form, reqs: e.target.value})}></textarea></div>
+                            <div className="pt-8 border-t border-white/10 text-center">
+                                {!isSubmitted ? (
+                                    <>
+                                        <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-lg hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition transform hover:-translate-y-1 mb-3">Submit For Review & Quote</button>
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block">Notice: Only Cash Accepted for all builds</span>
+                                    </>
+                                ) : (
+                                    <button type="button" onClick={() => setCurrentView('myorders')} className="w-full py-4 rounded-xl bg-green-600 text-white font-black text-lg hover:bg-green-500 transition shadow-[0_0_20px_rgba(34,197,94,0.4)] animate-pulse-glow">Track Request in Orders</button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        function MiniChat({ order, user, db }) {
+            const [messages, setMessages] = useState([]);
+            const [msgText, setMsgText] = useState('');
+            const msgsEndRef = useRef(null);
+
+            useEffect(() => {
+                const unsub = db.collection('messages').where('orderId', '==', order.id).onSnapshot(snap => {
+                    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    docs.sort((a,b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
+                    setMessages(docs);
+                    setTimeout(() => msgsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+                });
+                return unsub;
+            }, [order.id]);
+
+            const sendMessage = async (e) => {
+                e.preventDefault();
+                if(!msgText.trim()) return;
+                const txt = msgText; setMsgText('');
+                
+                await db.collection('messages').add({ orderId: order.id, senderId: user.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await db.collection('orders').doc(order.id).update({ lastMessage: `User: ${txt}`, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
+
+                if (!order.hasUserReplied) {
+                    await db.collection('orders').doc(order.id).update({ hasUserReplied: true });
+                    setTimeout(async () => {
+                        await db.collection('messages').add({ orderId: order.id, senderId: 'admin', text: "Thanks for messaging! An engineer will reply here shortly.", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                        await db.collection('orders').doc(order.id).update({ lastMessage: "System: Engineer will reply soon.", lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
+                    }, 1500);
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-[450px] bg-[#111] border border-white/10 rounded-2xl overflow-hidden mt-6 shadow-xl">
+                    <div className="p-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
+                        <span className="font-bold text-white flex items-center gap-2">💬 Project Discussion</span>
+                        <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 font-bold rounded flex items-center gap-2"><span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Online</span>
+                    </div>
+                    <div className="flex-grow overflow-y-auto p-5 space-y-5 flex flex-col hide-scrollbar">
+                        {messages.map(m => {
+                            const isSystem = m.text.startsWith('System:');
+                            const isMe = m.senderId === user.uid;
+
+                            if (isSystem) {
+                                return <div key={m.id} className="w-full text-center text-[10px] text-gray-500 font-mono py-1">{m.text}</div>;
+                            }
+
+                            return (
+                                <div key={m.id} className={`flex flex-col w-full ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <span className="text-[10px] text-gray-400 mb-1 px-1 font-bold uppercase">{isMe ? 'You' : 'WebForge Support'}</span>
+                                    <div className={`px-4 py-3 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${isMe ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-[#222] text-gray-100 rounded-tl-sm border border-white/5'}`}>
+                                        {m.text}
+                                    </div>
+                                    <span className="text-[10px] text-gray-600 mt-1 px-1 font-mono">{m.timestamp?.toDate() ? m.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}</span>
+                                </div>
+                            )
+                        })}
+                        <div ref={msgsEndRef}></div>
+                    </div>
+                    <form onSubmit={sendMessage} className="p-4 bg-black/60 border-t border-white/10 flex gap-3">
+                        <input type="text" value={msgText} onChange={(e) => setMsgText(e.target.value)} placeholder="Type a message..." className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition text-white placeholder-gray-500" />
+                        <button type="submit" disabled={!msgText.trim()} className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center transition shadow-lg ${msgText.trim() ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer' : 'bg-gray-700 cursor-not-allowed opacity-50'}`}>➤</button>
+                    </form>
+                </div>
+            );
+        }
+
+        // --- MY ORDERS DASHBOARD ---
+        function MyOrders({ user, db, setCurrentView, askConfirm, showToast }) {
+            const [orders, setOrders] = useState([]);
+            const [selectedOrder, setSelectedOrder] = useState(null);
+            const [tab, setTab] = useState('Templates');
+
+            useEffect(() => {
+                if(!user) return;
+                const unsub = db.collection('orders').where('userId', '==', user.uid).onSnapshot(snap => {
+                    let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    fetched.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+                    setOrders(fetched);
+                    
+                    if(selectedOrder) {
+                        const updated = fetched.find(d => d.id === selectedOrder.id);
+                        if(updated) setSelectedOrder(updated);
+                    }
+                });
+                return unsub;
+            }, [user]);
+
+            const getStatusColor = (status) => {
+                const map = { 'Pending': 'text-yellow-400', 'Approved': 'text-green-400', 'Rejected': 'text-red-400', 'Cancelled': 'text-red-500', 'Discussing': 'text-blue-400', 'In Progress': 'text-purple-400', 'Completed': 'text-teal-400' };
+                return map[status] || 'text-gray-400';
+            };
+
+            const handleCancelOrder = async (orderId) => {
+                try {
+                    await db.collection('orders').doc(orderId).update({ status: 'Cancelled', lastMessage: 'System: Order Cancelled by User' });
+                    await db.collection('messages').add({ orderId: orderId, senderId: 'admin', text: `System: 🚨 The user has cancelled this order.`, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    showToast("Order Cancelled Successfully.", "success");
+                } catch(e) { showToast("Error cancelling order.", "error"); }
+            };
+
+            const renderTimeline = (status) => {
+                if(status === 'Rejected') return <div className="w-full text-center p-4 bg-red-500/10 text-red-400 font-bold rounded-xl border border-red-500/20 uppercase tracking-widest text-xs">Order Rejected by Admin</div>;
+                if(status === 'Cancelled') return <div className="w-full text-center p-4 bg-red-500/10 text-red-500 font-bold rounded-xl border border-red-500/20 uppercase tracking-widest text-xs">Order Cancelled</div>;
+                
+                const stages = ['Pending', 'Approved', 'In Progress', 'Completed'];
+                let currIdx = stages.indexOf(status);
+                if(status === 'Discussing') currIdx = 1;
+                
+                return (
+                    <div className="flex justify-between items-center relative mt-10 mb-4 px-2">
+                        <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -z-10 -translate-y-1/2 rounded-full"></div>
+                        <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -z-10 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out" style={{width: `${(currIdx / 3) * 100}%`}}></div>
+                        {stages.map((stage, idx) => (
+                            <div key={stage} className="flex flex-col items-center gap-3 relative">
+                                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-xs md:text-sm border-4 transition-colors duration-500 ${idx <= currIdx ? 'bg-blue-600 border-[#1a1a1a] text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-[#1a1a1a] border-white/10 text-gray-600'}`}>
+                                    {idx < currIdx ? '✓' : idx + 1}
+                                </div>
+                                <span className={`absolute top-10 md:top-12 text-[8px] md:text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${idx <= currIdx ? 'text-blue-400' : 'text-gray-600'}`}>{stage}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            if (selectedOrder) {
+                return (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl mx-auto mt-6 glass-panel p-4 md:p-10 rounded-3xl relative shadow-2xl">
+                        
+                        <div className="flex flex-row justify-between items-center mb-8 gap-4 border-b border-white/10 pb-6">
+                            <button onClick={() => setSelectedOrder(null)} className="flex items-center justify-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-xs md:text-sm font-bold text-white flex-shrink-0">
+                                ← <span className="hidden sm:inline">Back to List</span><span className="sm:hidden">Back</span>
+                            </button>
+                            
+                            {['Pending', 'Discussing', 'Approved'].includes(selectedOrder.status) && (
+                                <button 
+                                    onClick={() => askConfirm("Cancel Order?", "Are you sure you want to cancel this order? This action cannot be undone.", () => handleCancelOrder(selectedOrder.id), 'danger')} 
+                                    className="px-4 py-2 md:px-5 md:py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition flex-shrink-0">
+                                    ✕ <span className="hidden sm:inline">Cancel Order</span><span className="sm:hidden">Cancel</span>
+                                </button>
+                            )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-10">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-black mb-2 leading-tight">
+                                    {selectedOrder.demoId === 'custom' ? `Custom Project` : `Template #${selectedOrder.demoNumber} Build`}
+                                </h2>
+                                <p className="text-gray-400 text-sm mb-8 font-mono">{selectedOrder.demoId === 'custom' ? selectedOrder.websiteName : 'Marketplace Order'}</p>
+                                
+                                <div className="bg-[#111] p-6 md:p-8 rounded-2xl border border-white/5 mb-6 shadow-inner">
+                                    <div className="flex justify-between items-end mb-8 border-b border-white/5 pb-6">
+                                        <div><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Order Status</p><p className={`text-2xl md:text-3xl font-black ${getStatusColor(selectedOrder.status)}`}>{selectedOrder.status}</p></div>
+                                        <div className="text-right"><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Agreed Price</p><p className="text-2xl md:text-3xl font-black text-white">{selectedOrder.price === 'TBD' ? 'TBD' : `₹${selectedOrder.price}`}</p></div>
+                                    </div>
+                                    <div className="pb-8">{renderTimeline(selectedOrder.status)}</div>
+                                </div>
+                                
+                                <div className="bg-[#111] p-6 rounded-2xl border border-white/5 text-sm space-y-4 text-gray-300 shadow-inner">
+                                    <h4 className="font-black text-white border-b border-white/10 pb-3 mb-3 uppercase tracking-widest text-xs">Project Specifications</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><strong className="text-gray-500 block text-[10px] uppercase mb-1">State/UT</strong> <span className="font-semibold text-xs md:text-sm">{selectedOrder.state}</span></div>
+                                        <div><strong className="text-gray-500 block text-[10px] uppercase mb-1">Type</strong> <span className="font-semibold text-xs md:text-sm">{selectedOrder.orderType === 'exact' ? 'Exact Match' : 'Customizations Required'}</span></div>
+                                    </div>
+                                    <div><strong className="text-gray-500 block text-[10px] uppercase mb-2">Requirements Note</strong> <div className="bg-black/50 p-3 rounded-lg border border-white/5 font-mono text-xs overflow-hidden break-words">{selectedOrder.specialMessage}</div></div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col h-full mt-6 lg:mt-0">
+                                <h3 className="text-xl font-black mb-2">Engineering Chat</h3>
+                                <p className="text-sm text-gray-400 mb-2">Direct line to the developer assigned to your build.</p>
+                                <MiniChat order={selectedOrder} user={user} db={db} />
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            }
+
+            const visibleOrders = orders.filter(o => tab === 'Templates' ? o.demoId !== 'custom' : o.demoId === 'custom');
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 md:mt-10">
+                    <h2 className="text-3xl md:text-5xl font-black mb-8">My Orders Dashboard</h2>
+                    
+                    <div className="flex gap-4 mb-10 border-b border-white/10 pb-4 overflow-x-auto hide-scrollbar">
+                        {['Templates', 'Custom'].map(t => (
+                            <button key={t} onClick={() => setTab(t)} className={`px-6 md:px-8 py-3 rounded-xl font-black text-xs md:text-sm uppercase tracking-widest transition-all whitespace-nowrap ${tab === t ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] transform md:scale-105' : 'bg-white/5 text-gray-500 hover:text-white hover:bg-white/10'}`}>
+                                {t} Orders
+                            </button>
+                        ))}
+                    </div>
+
+                    {visibleOrders.length === 0 ? (
+                        <div className="text-center py-24 md:py-32 bg-[#111] border border-white/5 rounded-3xl shadow-inner">
+                            <span className="text-4xl mb-4 block opacity-50">📂</span>
+                            <div className="text-gray-400 font-bold text-lg mb-2">No {tab.toLowerCase()} orders found.</div>
+                            <button onClick={()=>setCurrentView(tab === 'Templates' ? 'demos' : 'custom')} className="text-blue-400 font-bold hover:underline">Start a new project →</button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {visibleOrders.map(o => (
+                                <div key={o.id} onClick={() => setSelectedOrder(o)} className="glass-panel p-6 rounded-3xl cursor-pointer hover:-translate-y-2 transition-all duration-300 group border border-white/10 hover:border-blue-500/30 hover:shadow-[0_10px_40px_rgba(59,130,246,0.15)] flex flex-col h-[280px]">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1 block">Order ID: {o.id.substring(0,6)}</span>
+                                            <h3 className="font-black text-xl">{o.demoId === 'custom' ? 'Custom Build' : `Template #${o.demoNumber}`}</h3>
+                                        </div>
+                                        <span className={`text-[10px] uppercase font-black px-2.5 py-1.5 rounded border ${o.status==='Cancelled'?'bg-red-500/10 text-red-500 border-red-500/20' : o.status==='Completed'?'bg-teal-500/10 text-teal-400 border-teal-500/20' : o.status==='Pending'?'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>{o.status}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-400 flex-grow">
+                                        <div className="mb-2 line-clamp-2 leading-relaxed opacity-70 break-words">{o.specialMessage}</div>
+                                    </div>
+                                    <div className="bg-[#111] p-3 rounded-xl border border-white/5 mb-4 text-xs font-mono text-gray-400 truncate flex items-center gap-2">
+                                        <span className="text-blue-400 text-[10px]">💬</span> {o.lastMessage}
+                                    </div>
+                                    <div className="flex justify-between items-center border-t border-white/10 pt-4 mt-auto">
+                                        <span className="font-black text-lg text-white">{o.price === 'TBD' ? 'TBD' : `₹${o.price}`}</span>
+                                        <span className="text-blue-400 text-xs md:text-sm font-bold group-hover:underline">Open Dashboard →</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            );
+        }
+
+        // --- FULL ADMIN CHAT SYSTEM ---
+        function AdminChat({ user, isAdmin, db, setCurrentView, order, showToast }) {
+            const [selectedOrder, setSelectedOrder] = useState(order);
+            const [messages, setMessages] = useState([]);
+            const [msgText, setMsgText] = useState('');
+            const msgsEndRef = useRef(null);
+
+            useEffect(() => { if (order) setSelectedOrder(order); }, [order]);
+
+            useEffect(() => {
+                if(!selectedOrder) return;
+                const unsub = db.collection('messages').where('orderId', '==', selectedOrder.id).onSnapshot(snap => {
+                    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    docs.sort((a,b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
+                    setMessages(docs);
+                    setTimeout(() => msgsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+                });
+                return unsub;
+            }, [selectedOrder]);
+
+            const sendMessage = async (e) => {
+                e.preventDefault();
+                if(!msgText.trim() || !selectedOrder) return;
+                const txt = msgText; setMsgText('');
+                
+                await db.collection('messages').add({ orderId: selectedOrder.id, senderId: user.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await db.collection('orders').doc(selectedOrder.id).update({ lastMessage: `Admin: ${txt}`, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
+            };
+
+            if (!selectedOrder) return <div className="text-center mt-20 text-gray-400 font-bold">No order selected for chat. Return to Admin Panel.</div>;
+
+            return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex h-[85vh] md:h-[80vh] gap-6 mt-4 max-w-5xl mx-auto">
+                    <div className="flex-grow glass-panel rounded-3xl flex flex-col overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.5)] border-white/10">
+                        <div className="p-4 md:p-6 border-b border-white/10 bg-[#111] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setCurrentView('admin')} className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition">← Back</button>
+                                <div>
+                                    <h3 className="font-black text-lg md:text-xl text-white">Client: {selectedOrder.username}</h3>
+                                    <p className="text-[10px] md:text-xs text-purple-400 font-mono mt-1 font-bold">Ref: {selectedOrder.id} • {selectedOrder.demoId === 'custom' ? 'Custom Build' : `Demo #${selectedOrder.demoNumber}`}</p>
+                                </div>
+                            </div>
+                            <div className="text-left md:text-right">
+                                <div className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Agreed Value</div>
+                                <div className="text-xl md:text-2xl font-black text-white">{selectedOrder.price === 'TBD' ? 'TBD' : `₹${selectedOrder.price}`}</div>
+                            </div>
+                        </div>
+                        <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col bg-[#0a0a0a] hide-scrollbar">
+                            {messages.map(m => {
+                                const isSystem = m.text.startsWith('System:');
+                                const isMe = m.senderId !== selectedOrder.userId; 
+
+                                if (isSystem) {
+                                    return <div key={m.id} className="w-full text-center text-[10px] text-gray-500 font-mono py-1">{m.text}</div>;
+                                }
+
+                                return (
+                                    <div key={m.id} className={`flex flex-col w-full ${isMe ? 'items-end' : 'items-start'}`}>
+                                        <span className="text-[10px] text-gray-400 mb-1 px-1 font-bold uppercase">{isMe ? 'You (Admin)' : `Client (${selectedOrder.username})`}</span>
+                                        <div className={`px-4 py-3 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${isMe ? 'bg-purple-600 text-white rounded-tr-sm' : 'bg-[#222] text-gray-100 rounded-tl-sm border border-white/5'}`}>
+                                            {m.text}
+                                        </div>
+                                        <span className="text-[10px] text-gray-600 mt-1 px-1 font-mono">{m.timestamp?.toDate() ? m.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}</span>
+                                    </div>
+                                )
+                            })}
+                            <div ref={msgsEndRef}></div>
+                        </div>
+                        <form onSubmit={sendMessage} className="p-3 md:p-4 border-t border-white/10 bg-[#111] flex gap-2 md:gap-3">
+                            <input type="text" value={msgText} onChange={(e) => setMsgText(e.target.value)} placeholder="Type message to client..." className="flex-grow bg-black border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-sm text-white font-medium placeholder-gray-600" />
+                            <button type="submit" disabled={!msgText.trim()} className={`w-12 md:w-14 rounded-xl flex-shrink-0 flex items-center justify-center transition shadow-lg ${msgText.trim() ? 'bg-purple-600 hover:bg-purple-500 cursor-pointer' : 'bg-gray-800 opacity-50 cursor-not-allowed'}`}>➤</button>
+                        </form>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        // --- ADMIN PANEL ---
+        function AdminPanel({ db, setCurrentView, setActiveOrder, showToast, askConfirm }) {
+            const [orders, setOrders] = useState([]);
+            const [demos, setDemos] = useState([]);
+            const [tab, setTab] = useState('orders');
+            const [orderFilter, setOrderFilter] = useState('All');
+
+            useEffect(() => {
+                const unsub = db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snap => setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+                return unsub;
+            }, []);
+
+            useEffect(() => {
+                if(tab === 'pricing') db.collection('demos').orderBy('demoNumber').get().then(snap => setDemos(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+            }, [tab]);
+
+            const updateStatus = async (id, status) => {
+                await db.collection('orders').doc(id).update({ status });
+                showToast(`Order marked as ${status}`, 'success');
+            };
+
+            const deleteOrder = (id) => {
+                askConfirm("Delete Order?", "Are you sure you want to permanently delete this order and its entire chat history? This cannot be undone.", async () => {
+                    await db.collection('orders').doc(id).delete();
+                    showToast('Order Deleted Permanently.', 'success');
+                }, 'danger');
+            };
+
+            const updatePrice = async (id, newPrice) => {
+                if(!newPrice || isNaN(newPrice)) return;
+                await db.collection('demos').doc(id).update({ price: parseFloat(newPrice) });
+                showToast("Price updated successfully!", 'success');
+            };
+
+            const filteredOrders = orders.filter(o => {
+                if (orderFilter === 'Demo') return o.demoId !== 'custom';
+                if (orderFilter === 'Custom') return o.demoId === 'custom';
+                return true;
+            });
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-6 md:mt-10">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-[#111] p-4 md:p-8 rounded-3xl border border-white/5">
+                        <h2 className="text-2xl md:text-4xl font-black flex items-center gap-3 md:gap-4"><span className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-purple-500/20 text-purple-400 rounded-xl border border-purple-500/30 text-lg md:text-2xl shadow-inner">🛡️</span> Admin Center</h2>
+                        <div className="flex w-full md:w-auto glass-panel rounded-2xl p-1.5 bg-black/60 border border-white/5">
+                            <button onClick={()=>setTab('orders')} className={`flex-1 md:flex-none px-6 md:px-10 py-3 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition ${tab==='orders'?'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]':'text-gray-500 hover:text-white'}`}>Orders</button>
+                            <button onClick={()=>setTab('pricing')} className={`flex-1 md:flex-none px-6 md:px-10 py-3 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition ${tab==='pricing'?'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]':'text-gray-500 hover:text-white'}`}>Pricing</button>
+                        </div>
+                    </div>
+
+                    {tab === 'orders' && (
+                        <div>
+                            <div className="flex gap-2 md:gap-4 mb-8 border-b border-white/10 pb-4 overflow-x-auto hide-scrollbar">
+                                {['All', 'Demo', 'Custom'].map(f => (
+                                    <button key={f} onClick={() => setOrderFilter(f)} className={`px-4 md:px-8 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all whitespace-nowrap ${orderFilter === f ? 'bg-purple-600 text-white shadow-lg' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}>{f} Orders</button>
+                                ))}
+                            </div>
+                            <div className="grid gap-6">
+                                {filteredOrders.map(o => (
+                                    <div key={o.id} className={`glass-panel p-4 md:p-8 rounded-3xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-colors border-2 ${o.status === 'Cancelled' ? 'border-red-500/30 bg-red-900/10' : 'border-white/5 hover:border-purple-500/30'}`}>
+                                        <div className="flex-grow w-full overflow-hidden">
+                                            
+                                            {o.status === 'Cancelled' && (
+                                                <div className="w-full bg-red-500/20 text-red-500 font-black p-3 rounded-xl border border-red-500/40 text-center mb-5 uppercase tracking-widest text-xs md:text-sm flex items-center justify-center gap-2">
+                                                    <span className="animate-pulse">🚨</span> USER CANCELLED THIS ORDER <span className="animate-pulse">🚨</span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                                                <span className="font-black text-lg md:text-2xl">{o.username}</span>
+                                                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-1 md:py-1.5 rounded ${o.demoId === 'custom' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/10 text-gray-300 border border-white/20'}`}>{o.demoId === 'custom' ? 'Custom Website' : `Demo #${o.demoNumber}`}</span>
+                                                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-1 md:py-1.5 rounded border ${o.status==='Cancelled'?'bg-red-500/10 text-red-500 border-red-500/30':'bg-green-500/10 text-green-400 border-green-500/30'}`}>{o.price === 'TBD' ? 'TBD' : `₹${o.price}`}</span>
+                                            </div>
+                                            <div className="text-[10px] md:text-xs text-gray-300 flex flex-col md:flex-row gap-x-6 gap-y-2 mb-4 bg-black/40 p-3 md:p-4 rounded-xl border border-white/5 w-full md:w-fit break-words">
+                                                <span><strong className="text-gray-500 uppercase tracking-widest block mb-1">State</strong> {o.state}</span>
+                                                <span><strong className="text-gray-500 uppercase tracking-widest block mb-1">Requirement / Note</strong> {o.specialMessage || 'None'}</span>
+                                            </div>
+                                            <p className={`text-xs md:text-sm border-l-4 pl-3 md:pl-4 py-1 italic font-mono w-full md:w-fit pr-4 rounded-r-lg truncate max-w-xl text-ellipsis ${o.status === 'Cancelled' ? 'border-red-500 text-red-400 bg-red-900/20' : 'border-purple-500 text-gray-400 bg-[#111]'}`}>« {o.lastMessage || '...'} »</p>
+                                        </div>
+                                        
+                                        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-3 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-none border-white/10">
+                                            {o.status === 'Pending' && (
+                                                <div className="flex gap-2 w-full sm:w-auto">
+                                                    <button onClick={() => updateStatus(o.id, 'Approved')} className="flex-1 sm:flex-none px-4 py-3 bg-green-600 hover:bg-green-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-[0_0_10px_rgba(34,197,94,0.4)] transition">Approve</button>
+                                                    <button onClick={() => askConfirm("Reject Order?", "Are you sure you want to reject this order?", () => updateStatus(o.id, 'Rejected'), "danger")} className="flex-1 sm:flex-none px-4 py-3 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-[0_0_10px_rgba(239,68,68,0.4)] transition">Reject</button>
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col gap-1 w-full sm:w-auto">
+                                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1 hidden sm:block">Update Status</span>
+                                                <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className="bg-black/80 border border-white/10 rounded-xl px-4 py-3 text-xs md:text-sm font-bold text-white outline-none focus:border-purple-500 cursor-pointer w-full sm:w-40 appearance-none">
+                                                    <option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option><option value="Cancelled">Cancelled</option><option value="Discussing">Discussing</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex gap-2 w-full sm:w-auto sm:mt-5">
+                                                <button onClick={() => { setActiveOrder(o); setCurrentView('chat'); }} className="flex-1 sm:flex-none px-4 md:px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition shadow-[0_0_15px_rgba(168,85,247,0.5)]">Open Chat</button>
+                                                <button onClick={() => deleteOrder(o.id)} className="px-4 py-3 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition" title="Delete Order permanently">🗑</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {filteredOrders.length === 0 && <div className="text-center py-20 text-gray-500 font-bold text-lg md:text-xl bg-[#111] rounded-3xl border border-white/5">No {orderFilter.toLowerCase()} orders in system.</div>}
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'pricing' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            {demos.map(d => (
+                                <div key={d.id} className="glass-panel p-4 md:p-6 rounded-3xl flex flex-col border border-white/10 bg-[#111]">
+                                    <div className="flex justify-between items-center mb-5">
+                                        <span className="font-black text-base md:text-lg">Demo #{d.demoNumber}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white/5 px-2 py-1 rounded">{d.category}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <span className="bg-black border border-white/10 rounded-xl px-4 flex items-center text-gray-400 font-bold">₹</span>
+                                        <input type="number" defaultValue={d.price} onBlur={(e) => updatePrice(d.id, e.target.value)} className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-purple-500 transition" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            );
+        }
+
+        // --- AUTHENTICATION MODAL ---
+        function AuthModal({ setShowAuth, showToast }) {
+            const [isLogin, setIsLogin] = useState(true);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [username, setUsername] = useState('');
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    if (isLogin) await auth.signInWithEmailAndPassword(email, password);
+                    else {
+                        const cred = await auth.createUserWithEmailAndPassword(email, password);
+                        await cred.user.updateProfile({ displayName: username });
+                    }
+                    setShowAuth(false);
+                    showToast(isLogin ? "Logged in securely!" : "Account created successfully!", "success");
+                } catch (err) { showToast(err.message, "error"); }
+            };
+
+            const handleGoogleAuth = async () => {
+                try {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    await auth.signInWithPopup(provider);
+                    setShowAuth(false);
+                    showToast("Logged in with Google successfully!", "success");
+                } catch(err) { showToast(err.message, "error"); }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 py-8 overflow-y-auto">
+                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-md glass-panel p-8 md:p-10 rounded-3xl border-white/20 relative shadow-[0_0_50px_rgba(0,0,0,0.8)] my-auto">
+                        <button onClick={() => setShowAuth(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition">✕</button>
+                        <h2 className="text-3xl md:text-4xl font-black mb-8 text-center">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {!isLogin && (
+                                <div><label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Username</label><input required type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition" /></div>
+                            )}
+                            <div><label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Email</label><input required type="email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition" /></div>
+                            <div><label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Password</label><input required type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-[#111] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition" /></div>
+                            <button type="submit" className="w-full py-4 mt-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-lg transition shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]">{isLogin ? 'Login Securely' : 'Create Account'}</button>
+                        </form>
+                        <div className="flex justify-between text-sm mt-5 text-gray-400 text-center w-full">
+                            <span className="cursor-pointer hover:text-white font-semibold w-full" onClick={()=>setIsLogin(!isLogin)}>{isLogin ? 'Need an account? Sign up here' : 'Already have an account? Login'}</span>
+                        </div>
+                        <div className="flex items-center my-8"><div className="flex-grow border-t border-white/10"></div><span className="px-4 text-xs font-bold uppercase tracking-widest text-gray-500">OR</span><div className="flex-grow border-t border-white/10"></div></div>
+                        <button onClick={handleGoogleAuth} className="w-full py-4 rounded-xl bg-white text-black font-black text-base hover:bg-gray-200 transition flex items-center justify-center gap-3">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google
+                        </button>
+                    </motion.div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
