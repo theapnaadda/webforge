@@ -43,6 +43,12 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .gradient-text { background: linear-gradient(to right, #60a5fa, #a855f7, #ec4899); -webkit-background-clip: text; color: transparent; }
+        
+        /* Hacker Scanline Effect */
+        .scanlines {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+        }
     </style>
 
     <!-- React, Babel, Framer Motion, Firebase -->
@@ -149,10 +155,8 @@
                     transition={{ duration: 0.8, ease: "easeInOut" }} 
                     className="fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col font-mono text-gray-300 overflow-hidden"
                 >
-                    {/* Ambient Glows matching website theme */}
                     <div className="absolute top-[10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[150px] pointer-events-none animate-float z-0"></div>
                     <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-[150px] pointer-events-none animate-float-delayed z-0"></div>
-                    
                     <div className="absolute inset-0 pointer-events-none opacity-30 bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_4px] z-0"></div>
                     
                     <div className="flex-grow p-6 md:p-10 flex flex-col justify-end max-w-4xl w-full relative z-10 mx-auto">
@@ -181,7 +185,6 @@
                             </div>
                         </div>
                         
-                        {/* Premium Gradient Progress Bar */}
                         <div className="w-full border border-white/10 p-1 rounded-full mt-4 bg-black/50 shadow-[0_0_20px_rgba(59,130,246,0.1)] backdrop-blur-md">
                             <motion.div 
                                 initial={{ width: "0%" }} 
@@ -204,7 +207,6 @@
             const [user, setUser] = useState(null);
             const [isAdmin, setIsAdmin] = useState(false);
             
-            // Loading States
             const [isAuthLoaded, setIsAuthLoaded] = useState(false);
             const [isMinTimePassed, setIsMinTimePassed] = useState(false);
             
@@ -219,7 +221,6 @@
             
             const [savedScroll, setSavedScroll] = useState(0);
 
-            // Ensure the premium loading screen runs for at least 3.5 seconds
             useEffect(() => {
                 setTimeout(() => setIsMinTimePassed(true), 3500); 
             }, []);
@@ -367,9 +368,10 @@
             return (
                 <nav className="fixed top-0 w-full z-50 glass-panel border-b border-white/10 rounded-none bg-background/80 backdrop-blur-xl">
                     <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                        <div className="text-2xl font-bold tracking-tighter cursor-pointer flex items-center gap-3" onClick={() => setCurrentView('home')}>
+                        <div className="text-xl md:text-2xl font-bold tracking-tighter cursor-pointer flex items-center gap-3" onClick={() => setCurrentView('home')}>
                             <AnimatedCodeLogo />
-                            <span className="text-white neon-text hidden sm:block">WebForge</span>
+                            {/* Ensured WebForge displays on mobile too */}
+                            <span className="text-white neon-text">WebForge</span>
                         </div>
                         
                         <div className="hidden md:flex gap-6 text-sm font-medium text-gray-400 relative">
@@ -964,6 +966,7 @@
             );
         }
 
+        // --- CUSTOM ORDER WITH BACK BUTTON ---
         function CustomOrder({ user, db, setCurrentView, showToast }) {
             const [form, setForm] = useState({ name: '', description: '', reqs: '' });
             const [isSubmitted, setIsSubmitted] = useState(false);
@@ -988,6 +991,7 @@
             return (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-3xl mx-auto mt-6 md:mt-10">
                     
+                    {/* BACK BUTTON */}
                     <div className="mb-6">
                         <button onClick={() => setCurrentView('home')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-bold text-white w-fit">
                             ← Go Back
